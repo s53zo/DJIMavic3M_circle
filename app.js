@@ -20,7 +20,7 @@ function values() {
     heading: +$("heading").value,
     finish: $("finish").value,
     lost: $("lost").value,
-    name: "RF Circle Mission",
+    name: $("missionName").value.trim(),
   };
 }
 function validate(o) {
@@ -36,7 +36,17 @@ function validate(o) {
   if (!Number.isInteger(o.count) || o.count < 3 || o.count > 65535)
     e.push("Waypoint count must be an integer from 3 to 65,535.");
   if (!Number.isFinite(o.heading)) e.push("Heading must be valid.");
+  if (!o.name) e.push("Enter a mission / project name.");
   return e;
+}
+function missionFileStem(o) {
+  return (
+    o.name
+      .normalize("NFKD")
+      .replace(/[^\p{L}\p{N}]+/gu, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 80) || "RF_Circle_Mission"
+  );
 }
 function applyPastedCenter() {
   const match = $("centerPaste")
@@ -217,7 +227,7 @@ async function kmz(m) {
     throw Error("KMZ integrity check failed.");
   download(
     blob,
-    `RF_Circle_${m.o.radius}m_${m.o.altitude}m_${m.o.direction.toUpperCase()}.kmz`,
+    `${missionFileStem(m.o)}_${m.o.radius}m_${m.o.altitude}m_${m.o.direction.toUpperCase()}.kmz`,
     "application/vnd.google-earth.kmz",
   );
 }
@@ -249,20 +259,25 @@ $("generate").onclick = async () => {
 };
 $("csv").onclick = () => {
   const m = mission();
-  if (m) download(csv(m), "RF_circle_waypoints.csv", "text/csv");
+  if (m) download(csv(m), `${missionFileStem(m.o)}_waypoints.csv`, "text/csv");
 };
 $("template").onclick = () => {
   const m = mission();
   if (m)
     download(
       m.template,
-      "template.kml",
+      `${missionFileStem(m.o)}_template.kml`,
       "application/vnd.google-earth.kml+xml",
     );
 };
 $("waylines").onclick = () => {
   const m = mission();
-  if (m) download(m.waylines, "waylines.wpml", "application/xml");
+  if (m)
+    download(
+      m.waylines,
+      `${missionFileStem(m.o)}_waylines.wpml`,
+      "application/xml",
+    );
 };
 $("inspect").onclick = () => {
   const m = mission();

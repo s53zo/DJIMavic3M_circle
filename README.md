@@ -2,6 +2,8 @@
 
 A browser-only, Leaflet/OSM preview tool for designing RF antenna-pattern circle routes and exporting DJI WPML KMZ archives. Open `index.html` directly, or serve this folder statically. It needs network access only for Leaflet, OpenStreetMap tiles, and JSZip CDN libraries.
 
+Set **Mission / project name** before export. The name is embedded as KML document metadata and becomes the basis of the `.kmz` filename, which DJI Pilot 2 uses as the route name on import.
+
 ## DJI WPML implementation
 
 Each KMZ contains `template.kml` and `waylines.wpml` at its root. It uses WPML 1.0.2, WGS84 coordinates, Mavic 3M `droneEnumValue` **77**, `droneSubEnumValue` **2**, and Mavic 3M payload **68**—the values in DJI’s published WPML common-elements documentation. The generated route is a single `templateId`/`waylineId` of `0`, with continuous zero-based waypoint indexes and no duplicate closing waypoint.

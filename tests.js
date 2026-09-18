@@ -7,6 +7,7 @@
   };
   try {
     const o = {
+      name: "North antenna <RF> test",
       lat: 46,
       lng: 16,
       radius: 200,
@@ -75,6 +76,10 @@
       xml.includes("<wpml:droneEnumValue>77</wpml:droneEnumValue>") &&
         xml.includes("<wpml:droneSubEnumValue>2</wpml:droneSubEnumValue>") &&
         xml.includes("<wpml:payloadEnumValue>68</wpml:payloadEnumValue>"),
+    );
+    eq(
+      "mission name is XML escaped",
+      xml.includes("<name>North antenna &lt;RF&gt; test</name>"),
     );
     document.body.innerHTML =
       "<pre>" + log.join("\n") + "\n\nAll tests passed.</pre>";
