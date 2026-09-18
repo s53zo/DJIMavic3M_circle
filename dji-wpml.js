@@ -33,7 +33,15 @@ function headingParam(p, o) {
   return `<wpml:waypointHeadingParam><wpml:waypointHeadingMode>${mode}</wpml:waypointHeadingMode><wpml:waypointHeadingAngle>${signedHeading(p.heading).toFixed(2)}</wpml:waypointHeadingAngle><wpml:waypointPoiPoint>${mode === "towardPOI" ? poi : "0.000000,0.000000,0.000000"}</wpml:waypointPoiPoint><wpml:waypointHeadingAngleEnable>1</wpml:waypointHeadingAngleEnable><wpml:waypointHeadingPathMode>followBadArc</wpml:waypointHeadingPathMode><wpml:waypointHeadingPoiIndex>0</wpml:waypointHeadingPoiIndex></wpml:waypointHeadingParam>`;
 }
 function placemark(p, o, execute = false) {
-  return `<Placemark><Point><coordinates>${p.lng.toFixed(8)},${p.lat.toFixed(8)}</coordinates></Point><wpml:index>${p.index}</wpml:index>${execute ? `<wpml:executeHeight>${o.altitude}</wpml:executeHeight><wpml:waypointSpeed>${o.speed}</wpml:waypointSpeed>` : `<wpml:ellipsoidHeight>${o.altitude}</wpml:ellipsoidHeight><wpml:height>${o.altitude}</wpml:height><wpml:useGlobalHeight>1</wpml:useGlobalHeight>`}${headingParam(p, o)}<wpml:waypointTurnParam><wpml:waypointTurnMode>coordinateTurn</wpml:waypointTurnMode><wpml:waypointTurnDampingDist>${Math.min(10, o.radius * Math.sin(Math.PI / o.count)).toFixed(3)}</wpml:waypointTurnDampingDist></wpml:waypointTurnParam><wpml:useStraightLine>1</wpml:useStraightLine><wpml:waypointGimbalHeadingParam><wpml:waypointGimbalPitchAngle>0</wpml:waypointGimbalPitchAngle><wpml:waypointGimbalYawAngle>0</wpml:waypointGimbalYawAngle></wpml:waypointGimbalHeadingParam><wpml:isRisky>0</wpml:isRisky><wpml:waypointWorkType>0</wpml:waypointWorkType></Placemark>`;
+  // DJI Pilot 2 rejects coordinateTurn at the first or last waypoint (error 1546).
+  const endpoint = p.index === 0 || p.index === o.count - 1;
+  const turnMode = endpoint
+    ? "toPointAndStopWithDiscontinuityCurvature"
+    : "coordinateTurn";
+  const damping = endpoint
+    ? "0"
+    : Math.min(10, o.radius * Math.sin(Math.PI / o.count)).toFixed(3);
+  return `<Placemark><Point><coordinates>${p.lng.toFixed(8)},${p.lat.toFixed(8)}</coordinates></Point><wpml:index>${p.index}</wpml:index>${execute ? `<wpml:executeHeight>${o.altitude}</wpml:executeHeight><wpml:waypointSpeed>${o.speed}</wpml:waypointSpeed>` : `<wpml:ellipsoidHeight>${o.altitude}</wpml:ellipsoidHeight><wpml:height>${o.altitude}</wpml:height><wpml:useGlobalHeight>1</wpml:useGlobalHeight>`}${headingParam(p, o)}<wpml:waypointTurnParam><wpml:waypointTurnMode>${turnMode}</wpml:waypointTurnMode><wpml:waypointTurnDampingDist>${damping}</wpml:waypointTurnDampingDist></wpml:waypointTurnParam><wpml:useStraightLine>1</wpml:useStraightLine><wpml:waypointGimbalHeadingParam><wpml:waypointGimbalPitchAngle>0</wpml:waypointGimbalPitchAngle><wpml:waypointGimbalYawAngle>0</wpml:waypointGimbalYawAngle></wpml:waypointGimbalHeadingParam><wpml:isRisky>0</wpml:isRisky><wpml:waypointWorkType>0</wpml:waypointWorkType></Placemark>`;
 }
 function generateTemplateKml(o, pts) {
   const now = Date.now();

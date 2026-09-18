@@ -81,6 +81,14 @@
       "mission name is XML escaped",
       xml.includes("<name>North antenna &lt;RF&gt; test</name>"),
     );
+    eq(
+      "endpoint turns are DJI-safe",
+      (
+        xml.match(
+          /<wpml:waypointTurnMode>toPointAndStopWithDiscontinuityCurvature<\/wpml:waypointTurnMode>/g,
+        ) || []
+      ).length === 2,
+    );
     document.body.innerHTML =
       "<pre>" + log.join("\n") + "\n\nAll tests passed.</pre>";
   } catch (e) {
