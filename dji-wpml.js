@@ -1,6 +1,8 @@
-/* DJI WPML 1.0.2. Constants below are from DJI Cloud API WPML common elements:
-   M3E/M3T/M3M droneEnumValue=77, M3M subEnum=2, M3M camera payloadEnumValue=68. */
-const WPML_NS = "http://www.dji.com/wpmz/1.0.2";
+/* Compatibility layout and namespace are taken from Linear-Flight-Mission1.kmz
+   exported by DJI Pilot 2. Aircraft/payload values follow DJI's WPML enum docs:
+   77/2 is Mavic 3M and 68 is the Mavic 3M camera. No payload subtype is emitted
+   because DJI's public WPML enum table does not document one for payload 68. */
+const WPML_NS = "http://www.dji.com/wpmz/1.0.6";
 const xmlEscape = (s) =>
   String(s).replace(
     /[<>&"']/g,
@@ -28,10 +30,10 @@ function headingParam(p, o) {
         ? "towardPOI"
         : "smoothTransition";
   const poi = `${o.lat},${o.lng},0`;
-  return `<wpml:waypointHeadingParam><wpml:waypointHeadingMode>${mode}</wpml:waypointHeadingMode>${mode === "smoothTransition" ? `<wpml:waypointHeadingAngle>${signedHeading(p.heading).toFixed(2)}</wpml:waypointHeadingAngle><wpml:waypointHeadingPathMode>followBadArc</wpml:waypointHeadingPathMode>` : ""}${mode === "towardPOI" ? `<wpml:waypointPoiPoint>${poi}</wpml:waypointPoiPoint>` : ""}</wpml:waypointHeadingParam>`;
+  return `<wpml:waypointHeadingParam><wpml:waypointHeadingMode>${mode}</wpml:waypointHeadingMode><wpml:waypointHeadingAngle>${signedHeading(p.heading).toFixed(2)}</wpml:waypointHeadingAngle><wpml:waypointPoiPoint>${mode === "towardPOI" ? poi : "0.000000,0.000000,0.000000"}</wpml:waypointPoiPoint><wpml:waypointHeadingAngleEnable>1</wpml:waypointHeadingAngleEnable><wpml:waypointHeadingPathMode>followBadArc</wpml:waypointHeadingPathMode><wpml:waypointHeadingPoiIndex>0</wpml:waypointHeadingPoiIndex></wpml:waypointHeadingParam>`;
 }
 function placemark(p, o, execute = false) {
-  return `<Placemark><Point><coordinates>${p.lng.toFixed(8)},${p.lat.toFixed(8)}</coordinates></Point><wpml:index>${p.index}</wpml:index>${execute ? `<wpml:executeHeight>${o.altitude}</wpml:executeHeight>` : `<wpml:ellipsoidHeight>${o.altitude}</wpml:ellipsoidHeight><wpml:height>${o.altitude}</wpml:height><wpml:useGlobalHeight>1</wpml:useGlobalHeight>`}<wpml:useGlobalHeadingParam>0</wpml:useGlobalHeadingParam>${headingParam(p, o)}<wpml:useGlobalTurnParam>0</wpml:useGlobalTurnParam><wpml:waypointTurnParam><wpml:waypointTurnMode>toPointAndPassWithContinuityCurvature</wpml:waypointTurnMode><wpml:waypointTurnDampingDist>0</wpml:waypointTurnDampingDist></wpml:waypointTurnParam><wpml:useStraightLine>0</wpml:useStraightLine></Placemark>`;
+  return `<Placemark><Point><coordinates>${p.lng.toFixed(8)},${p.lat.toFixed(8)}</coordinates></Point><wpml:index>${p.index}</wpml:index>${execute ? `<wpml:executeHeight>${o.altitude}</wpml:executeHeight><wpml:waypointSpeed>${o.speed}</wpml:waypointSpeed>` : `<wpml:ellipsoidHeight>${o.altitude}</wpml:ellipsoidHeight><wpml:height>${o.altitude}</wpml:height><wpml:useGlobalHeight>1</wpml:useGlobalHeight>`}${headingParam(p, o)}<wpml:waypointTurnParam><wpml:waypointTurnMode>coordinateTurn</wpml:waypointTurnMode><wpml:waypointTurnDampingDist>${Math.min(10, o.radius * Math.sin(Math.PI / o.count)).toFixed(3)}</wpml:waypointTurnDampingDist></wpml:waypointTurnParam><wpml:useStraightLine>1</wpml:useStraightLine><wpml:waypointGimbalHeadingParam><wpml:waypointGimbalPitchAngle>0</wpml:waypointGimbalPitchAngle><wpml:waypointGimbalYawAngle>0</wpml:waypointGimbalYawAngle></wpml:waypointGimbalHeadingParam><wpml:isRisky>0</wpml:isRisky><wpml:waypointWorkType>0</wpml:waypointWorkType></Placemark>`;
 }
 function generateTemplateKml(o, pts) {
   const now = Date.now();

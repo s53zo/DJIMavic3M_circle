@@ -6,7 +6,7 @@ Set **Mission / project name** before export. The name is embedded as KML docume
 
 ## DJI WPML implementation
 
-Each KMZ contains `template.kml` and `waylines.wpml` at its root. It uses WPML 1.0.2, WGS84 coordinates, Mavic 3M `droneEnumValue` **77**, `droneSubEnumValue` **2**, and Mavic 3M payload **68**—the values in DJI’s published WPML common-elements documentation. The generated route is a single `templateId`/`waylineId` of `0`, with continuous zero-based waypoint indexes and no duplicate closing waypoint.
+Each KMZ contains `wpmz/template.kml` and `wpmz/waylines.wpml`, matching a DJI Pilot 2 route exported from the connected controller. It uses that reference's WPML 1.0.6 namespace and WGS84 coordinates. The Mavic 3M identifiers follow DJI's public WPML enum table: aircraft `77/2` and payload `68`; no payload subtype is emitted because DJI does not document one for payload 68. The generated route is a single `templateId`/`waylineId` of `0`, with continuous zero-based waypoint indexes and no duplicate closing waypoint.
 
 DJI references:
 
@@ -17,7 +17,7 @@ DJI references:
 
 ## Checks
 
-The UI validates position, mission values, XML well-formedness, and reads the generated ZIP back to confirm both DJI files exist. Its deterministic geodesic calculations use a 6,371,008.8m mean Earth radius and include calculated distances in the waypoint table. Use the reference-inspector control with a Pilot 2-exported KMZ to compare actual fields before operational use.
+The UI validates position, mission values, XML well-formedness, and reads the generated ZIP back to confirm both DJI files exist at the DJI Pilot 2-compatible `wpmz/` paths. Its deterministic geodesic calculations use a 6,371,008.8m mean Earth radius and include calculated distances in the waypoint table. Use the reference-inspector control with a Pilot 2-exported KMZ to compare actual fields before operational use.
 
 Open `tests.html` in a modern browser to run the geometry, heading, XML/model and deterministic-output checks.
 

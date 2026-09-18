@@ -219,11 +219,12 @@ async function kmz(m) {
   if (!validateXml(m.template) || !validateXml(m.waylines))
     throw Error("Generated XML is not well formed.");
   const z = new JSZip();
-  z.file("template.kml", m.template);
-  z.file("waylines.wpml", m.waylines);
+  // DJI Pilot 2 reference export places both required route files under wpmz/.
+  z.file("wpmz/template.kml", m.template);
+  z.file("wpmz/waylines.wpml", m.waylines);
   const blob = await z.generateAsync({ type: "blob", compression: "DEFLATE" });
   const checked = await JSZip.loadAsync(blob);
-  if (!checked.file("template.kml") || !checked.file("waylines.wpml"))
+  if (!checked.file("wpmz/template.kml") || !checked.file("wpmz/waylines.wpml"))
     throw Error("KMZ integrity check failed.");
   download(
     blob,
@@ -314,8 +315,8 @@ $("reference").onchange = async (e) => {
   try {
     const z = await JSZip.loadAsync(f);
     const names = Object.keys(z.files);
-    const t = z.file("template.kml"),
-      w = z.file("waylines.wpml");
+    const t = z.file("wpmz/template.kml") || z.file("template.kml"),
+      w = z.file("wpmz/waylines.wpml") || z.file("waylines.wpml");
     const tx = t ? await t.async("text") : "",
       wx = w ? await w.async("text") : "";
     const pick = (x, s) =>
