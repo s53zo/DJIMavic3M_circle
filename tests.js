@@ -89,6 +89,12 @@
         ) || []
       ).length === 2,
     );
+    eq(
+      "coordinate-turn damping leaves leg clearance",
+      xml.includes(
+        "<wpml:waypointTurnDampingDist>4.362</wpml:waypointTurnDampingDist>",
+      ),
+    );
     document.body.innerHTML =
       "<pre>" + log.join("\n") + "\n\nAll tests passed.</pre>";
   } catch (e) {

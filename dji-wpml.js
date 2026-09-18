@@ -38,9 +38,10 @@ function placemark(p, o, execute = false) {
   const turnMode = endpoint
     ? "toPointAndStopWithDiscontinuityCurvature"
     : "coordinateTurn";
-  const damping = endpoint
-    ? "0"
-    : Math.min(10, o.radius * Math.sin(Math.PI / o.count)).toFixed(3);
+  // Two consecutive coordinate turns share a leg. Keeping each damping distance
+  // below one quarter of the chord leaves deliberate clearance after rounding.
+  const chord = 2 * o.radius * Math.sin(Math.PI / o.count);
+  const damping = endpoint ? "0" : Math.min(10, chord / 4).toFixed(3);
   return `<Placemark><Point><coordinates>${p.lng.toFixed(8)},${p.lat.toFixed(8)}</coordinates></Point><wpml:index>${p.index}</wpml:index>${execute ? `<wpml:executeHeight>${o.altitude}</wpml:executeHeight><wpml:waypointSpeed>${o.speed}</wpml:waypointSpeed>` : `<wpml:ellipsoidHeight>${o.altitude}</wpml:ellipsoidHeight><wpml:height>${o.altitude}</wpml:height><wpml:useGlobalHeight>1</wpml:useGlobalHeight>`}${headingParam(p, o)}<wpml:waypointTurnParam><wpml:waypointTurnMode>${turnMode}</wpml:waypointTurnMode><wpml:waypointTurnDampingDist>${damping}</wpml:waypointTurnDampingDist></wpml:waypointTurnParam><wpml:useStraightLine>1</wpml:useStraightLine><wpml:waypointGimbalHeadingParam><wpml:waypointGimbalPitchAngle>0</wpml:waypointGimbalPitchAngle><wpml:waypointGimbalYawAngle>0</wpml:waypointGimbalYawAngle></wpml:waypointGimbalHeadingParam><wpml:isRisky>0</wpml:isRisky><wpml:waypointWorkType>0</wpml:waypointWorkType></Placemark>`;
 }
 function generateTemplateKml(o, pts) {

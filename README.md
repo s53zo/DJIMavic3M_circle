@@ -8,6 +8,8 @@ Set **Mission / project name** before export. The name is embedded as KML docume
 
 Each KMZ contains `wpmz/template.kml` and `wpmz/waylines.wpml`, matching a DJI Pilot 2 route exported from the connected controller. It uses that reference's WPML 1.0.6 namespace and WGS84 coordinates. The Mavic 3M identifiers follow DJI's public WPML enum table: aircraft `77/2` and payload `68`; no payload subtype is emitted because DJI does not document one for payload 68. The generated route is a single `templateId`/`waylineId` of `0`, with continuous zero-based waypoint indexes and no duplicate closing waypoint.
 
+The first and last waypoints use DJI's stop turn with zero damping. Interior coordinate turns use no more than one quarter of a waypoint-to-waypoint chord; this leaves clearance between adjacent turns and avoids DJI Pilot 2 error 1546 caused by overlapping turn damping.
+
 DJI references:
 
 - [WPML overview and KMZ layout](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/overview.html)
