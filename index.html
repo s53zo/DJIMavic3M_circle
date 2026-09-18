@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DJI Mavic 3M Circle Mission</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <span class="eyebrow">RF FIELD TOOL</span>
+        <h1>Circle Mission Generator</h1>
+      </div>
+      <span class="badge">DJI Mavic 3M · WPML</span>
+    </header>
+    <main>
+      <aside>
+        <section class="warning">
+          <strong>Flight review required</strong><br />Generated missions must
+          be reviewed in DJI Pilot 2 before flight. Confirm altitude reference,
+          obstacle clearance, RTH altitude, geofencing, airspace, terrain and
+          local legal requirements.
+        </section>
+        <h2>Mission parameters</h2>
+        <label
+          >Paste center coordinates <small>Latitude, longitude</small
+          ><input
+            id="centerPaste"
+            type="text"
+            inputmode="decimal"
+            placeholder="46.73409963984678, 16.17774508632081"
+        /></label>
+        <button id="applyCenterPaste" class="secondary">
+          Apply pasted coordinates
+        </button>
+        <div class="grid">
+          <label
+            >Center latitude<input
+              id="lat"
+              type="number"
+              step="any"
+              value="46.0569" /></label
+          ><label
+            >Center longitude<input
+              id="lng"
+              type="number"
+              step="any"
+              value="14.5058"
+          /></label>
+        </div>
+        <button id="useCenter" class="secondary">Use map center</button>
+        <h3>Circle</h3>
+        <div class="grid">
+          <label
+            >Radius [m]<input
+              id="radius"
+              type="number"
+              min="1"
+              value="200" /></label
+          ><label
+            >Altitude [m]<input
+              id="altitude"
+              type="number"
+              min="1"
+              value="100" /></label
+          ><label
+            >Waypoints<input
+              id="count"
+              type="number"
+              min="3"
+              max="65535"
+              value="72" /></label
+          ><label>Spacing [°]<output id="spacing"></output></label
+          ><label
+            >Start azimuth [°]<input
+              id="startAzimuth"
+              type="number"
+              min="0"
+              max="359.999"
+              value="0" /></label
+          ><label
+            >Direction<select id="direction">
+              <option value="cw">Clockwise</option>
+              <option value="ccw">Counter-clockwise</option>
+            </select></label
+          >
+        </div>
+        <label
+          >Altitude reference<select id="altRef">
+            <option value="relativeToStartPoint">
+              Relative to takeoff point
+            </option>
+            <option value="EGM96">Absolute / EGM96</option>
+          </select></label
+        >
+        <h3>Flight & yaw</h3>
+        <div class="grid">
+          <label
+            >Speed [m/s]<input
+              id="speed"
+              type="number"
+              min="0.1"
+              max="15"
+              step=".1"
+              value="5" /></label
+          ><label
+            >Finish action<select id="finish">
+              <option value="noAction">Hover</option>
+              <option value="goHome">Return to Home</option>
+              <option value="autoLand">Land</option>
+              <option value="gotoFirstWaypoint">Go to first waypoint</option>
+            </select></label
+          >
+        </div>
+        <label
+          >Aircraft heading<select id="headingMode">
+            <option value="fixed">
+              Fixed geographic heading — Recommended
+            </option>
+            <option value="center">Point toward center</option>
+            <option value="away">Point away from center</option>
+            <option value="tangent">Tangent to flight path</option>
+            <option value="initial">Fixed initial heading</option>
+          </select></label
+        ><label id="headingWrap"
+          >Fixed heading [°]<input
+            id="heading"
+            type="number"
+            min="0"
+            max="360"
+            value="0" /></label
+        ><label
+          >Lost-link<select id="lost">
+            <option value="continue">Continue mission</option>
+            <option value="action">Hover / execute lost action</option>
+          </select></label
+        >
+        <label
+          >Gimbal pitch [°] <small>(optional; disabled for RF missions)</small
+          ><input id="gimbalPitch" type="number" value="0" disabled
+        /></label>
+        <h3>Presets</h3>
+        <div class="presets">
+          <button data-preset="rf">RF Azimuth 200m / 100m</button
+          ><button data-preset="5">RF Fine 5°</button
+          ><button data-preset="2">RF Fine 2°</button
+          ><button data-preset="quick">Quick Test</button>
+        </div>
+        <div id="errors"></div>
+        <div class="actions">
+          <button id="generate">Generate DJI KMZ</button
+          ><button id="csv" class="secondary">Download waypoint CSV</button
+          ><button id="template" class="secondary">Download template.kml</button
+          ><button id="waylines" class="secondary">
+            Download waylines.wpml</button
+          ><button id="inspect" class="secondary">Inspect WPML</button>
+        </div>
+      </aside>
+      <section class="content">
+        <div id="map"></div>
+        <div class="mapbar">
+          Click to set center · <span id="mapCenter"></span
+          ><button id="zoom" class="secondary">Zoom to mission</button>
+        </div>
+        <section class="stats">
+          <article><span>Route circumference</span><b id="circ"></b></article>
+          <article><span>Slant distance</span><b id="slant"></b></article>
+          <article><span>Elevation angle</span><b id="elevation"></b></article>
+          <article><span>Flight duration</span><b id="duration"></b></article>
+          <article><span>Angular rate</span><b id="rate"></b></article>
+          <article><span>Chord / waypoint</span><b id="chord"></b></article>
+        </section>
+        <section class="rf">
+          <strong>RF measurement note:</strong> For antenna-pattern
+          measurements, keeping aircraft yaw fixed can help separate the ground
+          antenna pattern from the radiation/reception pattern of the antenna
+          mounted on the drone.<br /><strong>Payload safety:</strong> Confirm
+          that the RF payload, antenna and mounting method do not interfere with
+          GNSS, compass, control link, obstacle sensors or aircraft balance.
+        </section>
+        <h2>Calculated waypoints</h2>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Azimuth</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Altitude</th>
+                <th>Aircraft heading</th>
+                <th>From center</th>
+                <th>From previous</th>
+                <th>Mission time</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <details>
+          <summary>Reference mission inspector (development utility)</summary>
+          <p>
+            Load a DJI Pilot 2-exported KMZ to inspect its files and compare
+            DJI-specific fields. Never copies coordinates or IDs into this
+            mission.
+          </p>
+          <input type="file" id="reference" accept=".kmz" />
+          <pre id="referenceOut"></pre>
+        </details>
+        <section class="help">
+          <h2>Import checklist</h2>
+          <ol>
+            <li>
+              Enter the center and mission parameters, then inspect the map.
+            </li>
+            <li>
+              Generate the KMZ and copy it to the controller/SD card as
+              appropriate.
+            </li>
+            <li>
+              Import it from DJI Pilot 2’s route library, then inspect every
+              waypoint, altitude, speed, yaw and finish action.
+            </li>
+            <li>Make the first test at reduced radius and altitude.</li>
+          </ol>
+          <p>
+            Verify local flight regulations, airspace restrictions, altitude
+            limits, VLOS requirements and obstacle clearance before flying.
+          </p>
+        </section>
+      </section>
+    </main>
+    <dialog id="modal">
+      <button id="close">Close</button>
+      <pre id="xml"></pre>
+    </dialog>
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="geo.js"></script>
+    <script src="dji-wpml.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
