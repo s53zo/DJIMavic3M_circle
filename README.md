@@ -23,4 +23,4 @@ Open `tests.html` in a modern browser to run the geometry, heading, XML/model an
 
 ## Flight safety
 
-Generated missions are planning artifacts. Import and inspect every waypoint, altitude reference, speed, yaw, RTH/lost-link behavior, and finish action in DJI Pilot 2. Confirm local regulations, airspace, terrain, obstacles, VLOS, antenna mounting and aircraft balance.
+Generated missions are planning artifacts. The generator exports **relative-to-takeoff** altitude only; it deliberately does not label a user-entered altitude as an absolute ellipsoid height without an authoritative local geoid/ellipsoid conversion. Import and inspect every waypoint, altitude reference, speed, yaw, RTH/lost-link behavior, and finish action in DJI Pilot 2. Confirm local regulations, airspace, terrain, obstacles, VLOS, antenna mounting and aircraft balance.

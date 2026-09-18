@@ -31,6 +31,10 @@ function validate(o) {
     e.push("Longitude must be between −180 and 180.");
   if (!(o.radius > 0)) e.push("Radius must be greater than 0.");
   if (!(o.altitude > 0)) e.push("Altitude must be greater than 0.");
+  if (o.altRef !== "relativeToStartPoint")
+    e.push(
+      "Only relative-to-takeoff altitude is supported for safe WPML export.",
+    );
   if (!(o.speed > 0 && o.speed <= 15))
     e.push("Speed must be 0–15 m/s (conservative WPML UI limit).");
   if (!Number.isInteger(o.count) || o.count < 3 || o.count > 65535)
